@@ -2,7 +2,7 @@ export function MetaSVG(props) {
     return (
       <svg
         aria-hidden="true"
-        className="w-6 h-5 me-2 -ms-1"
+        className="w-4 h-4 me-2 -ms-1"
         viewBox="0 0 2405 2501"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"

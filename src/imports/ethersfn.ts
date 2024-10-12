@@ -1,3 +1,4 @@
+import { Console } from "console";
 import { ethers } from "ethers";
 
 export function checkMetaMask() {
@@ -9,13 +10,17 @@ export function checkMetaMask() {
 }
 
 export async function getConnectedAccount() {
-	if (!checkMetaMask()) return;
-
+	console.log("getAcount fn called");
+	if (!checkMetaMask()){ 
+		console.log("check me");
+		return;
+	}
 	try {
+		console.log("try catch");
 		const accounts = await window.ethereum.request({
 			method: "eth_accounts",
 		});
-
+		console.log("No of accounts is",accounts.length);
 		// If accounts are connected, set the first one
 		if (accounts.length > 0) {
 			return accounts[0];
@@ -69,6 +74,7 @@ export async function checkChain(chainId: string) {
 	// console.log("Current chain ID:", currentChainId); // Log current chain ID
 
 	if(currentChainId !== chainId) {
+		alert("Please connect to Polygon Amoy!");
 		return false
 	} else {
 		return true
