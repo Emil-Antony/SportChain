@@ -117,7 +117,7 @@ const balanceUpdate = async () => {
           <span className="my-1 text-white px-3 py-1">Account:</span>
           <a className="truncate w-40 my-1 bg-gray-800 text-white px-3 py-1 rounded-full border border-gray-600 "
             data-tooltip-id="my-tooltip"
-            data-tooltip-content={`Balance: ${balance} MATIC`}
+            data-tooltip-content={`Balance: ${balance} POL`}
             data-tooltip-place="bottom-start"
           >      
             {account}
