@@ -13,16 +13,17 @@ import {
 import { Tooltip } from 'react-tooltip'
 
 const amoyTestnetParams = {
-  chainId: "0x13882",
-  chainName: "Polygon Amoy Testnet",
-  rpcUrls: ["https://rpc-amoy.polygon.technology/"],
-  nativeCurrency: {
-    name: "MATIC",
-    symbol: "MATIC",
-    decimals: 18,
-  },
-  blockExplorerUrls: ["https://www.oklink.com/amoy"],
-};
+    chainId: "0x7A69",
+    chainName: "Local Hardhat Network",
+    rpcUrls: ["http://127.0.0.1:8545/"],
+    nativeCurrency: {
+      name: "GO",
+      symbol: "GO",
+      decimals: 18,
+    },
+    blockExplorerUrls: [],
+  };
+
 
 export default function Dash() {
   const [account, setAccount] = useState<string | null>(null);
@@ -117,7 +118,7 @@ const balanceUpdate = async () => {
           <span className="my-1 text-white px-3 py-1">Account:</span>
           <a className="truncate w-40 my-1 bg-gray-800 text-white px-3 py-1 rounded-full border border-gray-600 "
             data-tooltip-id="my-tooltip"
-            data-tooltip-content={`Balance: ${balance} POL`}
+            data-tooltip-content={`Balance: ${balance} GO`}
             data-tooltip-place="bottom-start"
           >      
             {account}

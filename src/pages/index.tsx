@@ -20,15 +20,15 @@ const Home: React.FC = () => {
   const [balance, setBalance] = useState<number>(0);
 
   const amoyTestnetParams = {
-    chainId: "0x13882",
-    chainName: "Polygon Amoy Testnet",
-    rpcUrls: ["https://rpc-amoy.polygon.technology/"],
+    chainId: "0x7A69",
+    chainName: "Local Hardhat Network",
+    rpcUrls: ["http://127.0.0.1:8545/"],
     nativeCurrency: {
-      name: "MATIC",
-      symbol: "MATIC",
+      name: "GO",
+      symbol: "GO",
       decimals: 18,
     },
-    blockExplorerUrls: ["https://www.oklink.com/amoy"],
+    blockExplorerUrls: [],
   };
 
   const router = useRouter();
