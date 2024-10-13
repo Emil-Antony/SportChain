@@ -10,7 +10,9 @@ import {
   getBalance,
   connectToMetaMask,
 } from "@/imports/ethersfn";
-import { Tooltip } from 'react-tooltip'
+import { Tooltip } from 'react-tooltip';
+import sportnftabi from '@/abis/sportnft.json';
+import contractconfig from "../config.json";
 
 const amoyTestnetParams = {
     chainId: "0x7A69",
@@ -30,9 +32,18 @@ export default function Dash() {
   const [isMetaMaskInstalled, setIsMetaMaskInstalled] =
     useState<boolean>(false);
   const [balance, setBalance] = useState<number>(0);
+  const [provider,setProvider] = useState<ethers.BrowserProvider | null>(null)
+  const [sportNFT, setsportNFT] = useState<ethers.Contract | null>(null)
 
   const router = useRouter();
-
+async function setContracts(){
+  const provider = new ethers.BrowserProvider(window.ethereum);
+  setProvider(provider);
+  // const network = provider.network;
+  const sportNFT = new ethers.Contract("0x5fbdb2315678afecb367f032d93f642f64180aa3",sportnftabi,provider);
+  setsportNFT(sportNFT);
+  console.log("Contract address: ",await sportNFT.getAddress());
+}
 function goHome (){
   router.push("/");
 }
@@ -48,6 +59,7 @@ const balanceUpdate = async () => {
 
   useEffect(() => {
     setIsMetaMaskInstalled(checkMetaMask());
+    setContracts();
   }, []);
 
   useEffect(() => {
@@ -111,26 +123,45 @@ const balanceUpdate = async () => {
     };
   }, [account]);
 
-    return (
-      <nav className=" dark:bg-black fixed w-full z-20 top-0 start-0 border-b border-gray-200 dark:border-gray-600">
-        <div className="max-w-screen flex flex-wrap items-center justify-between  p-4">
-        <div className="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse"> 
-          <span className="my-1 text-white px-3 py-1">Account:</span>
-          <a className="truncate w-40 my-1 bg-gray-800 text-white px-3 py-1 rounded-full border border-gray-600 "
-            data-tooltip-id="my-tooltip"
-            data-tooltip-content={`Balance: ${balance} GO`}
-            data-tooltip-place="bottom-start"
-          >      
-            {account}
-          </a> 
-          <Tooltip id="my-tooltip" />
-        </div>
-          <div className="items-center justify-between hidden w-full md:flex md:w-auto md:order-1" id="navbar-sticky">
-            <img src="/logo.png" className="w-11  h-auto ms-4" alt="Logo" ></img>
-            <img src="/logotxt.png" className="w-32 h-auto" alt="Logo" ></img>
+  return (
+    <div>
+      <div className="mb-3">
+        <nav className="dark:bg-black fixed w-full z-20 top-0 start-0 border-b border-gray-600 ">
+          <div className="max-w-screen flex flex-wrap items-center justify-between p-4">
+            <div className="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse"> 
+              <span className="my-1 text-white px-3 py-1">Account:</span>
+              <a className="truncate w-40 my-1 bg-gray-800 text-white px-3 py-1 rounded-full border border-gray-600"
+                data-tooltip-id="my-tooltip"
+                data-tooltip-content={`Balance: ${balance} GO`}
+                data-tooltip-place="bottom-start"
+              >      
+                {account}
+              </a> 
+              <Tooltip id="my-tooltip" />
+            </div>
+            <div className="items-center justify-between hidden w-full md:flex md:w-auto md:order-1" id="navbar-sticky">
+              <img src="/logo.png" className="w-11 h-auto ms-4" alt="Logo" />
+              <img src="/logotxt.png" className="w-32 h-auto" alt="Logo" />
+            </div>
+          </div>
+        </nav>
+      </div>
+      
+      {/* Centered Title Section */}
+      <div className="flex"> 
+        <div className="group rounded text-sm font-semibold cursor-pointer  pb-2 w-fit px-20 ms-20  mt-20 pb-5">
+          <div className=" bg-transparent w-fit h-full p-1.5">
+            <h1 className="font-extrabold text-transparent text-xl sm:text-4xl xl:text-4xl bg-clip-text bg-white bg-transparent mb-5">
+              Event Tickets
+            </h1>
           </div>
         </div>
-      </nav>
-
-    );
-  };
+      </div>
+      <div style={{height: '1px'}} className=" bg-gradient-to-r from-transparent via-gray-800 to-transparent" />
+      <div>
+        hello
+      </div>
+    </div>
+  );
+  
+};
