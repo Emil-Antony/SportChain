@@ -48,12 +48,13 @@ async function setContracts(){
   console.log({totalOccasions:totalOccasions.toString() });
   const occasions = [];
   for(let i=1; i<=totalOccasions; i++){
-    const occa = await sportNFT.getOccasion(i );
+    const occa = await sportNFT.getOccasion(i);
     occasions.push(occa);
   }
   setOccasion(occasions);
   for(let i=0 ; i<totalOccasions;i++){
-    console.log(occasions[i]);
+    let cost = ethers.formatEther(occasions[i].cost)
+    console.log(occasions[i].ticket);
   }
   
 
@@ -165,16 +166,38 @@ const balanceUpdate = async () => {
       <div className="flex"> 
         <div className="group rounded text-sm font-semibold cursor-pointer  pb-2 w-fit px-20 ms-20  mt-20 pb-5">
           <div className=" bg-transparent w-fit h-full p-1.5">
-            <h1 className="font-extrabold text-transparent text-xl sm:text-4xl xl:text-4xl bg-clip-text bg-white bg-transparent mb-5">
+            <h1 className="font-extrabold text-transparent text-xl sm:text-4xl xl:text-4xl bg-clip-text bg-white bg-transparent">
               Event Tickets
             </h1>
           </div>
         </div>
       </div>
       <div style={{height: '1px'}} className=" bg-gradient-to-r from-transparent via-gray-800 to-transparent" />
-      <div>
-        
+      <div className="text-white p-10">
+        {
+          occasions.map((occasion, i) => (
+            <div key={i} className="p-6 mb-4 mx-20  bg-gray-900 rounded-lg shadow-lg hover:bg-gray-800 ">
+              <div className="flex justify-between items-center">
+                <div className="flex flex-col justify-center">
+                  <p className="text-lg font-semibold">{occasion.date}</p>
+                  <p className="text-sm text-gray-400">{occasion.time}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-lg font-semibold">{occasion.name}</p>
+                  <p className="text-sm text-gray-400">{occasion.location}</p>
+                </div>
+                <div className="text-right">
+                  {Number(occasion.tickets) > 0 ?
+                  <button className="text-m border border-lg border-transparent rounded p-1 w-20 font-mono bg-green-500 transition duration-200 text-white hover:scale-110 hover:bg-emerald-500 duration-300">{ethers.formatEther(occasion.cost)} ETH</button>:
+                  <button className="text-m border border-lg border-transparent rounded p-1 w-20 font-mono bg-red-600 transition duration-200 text-white hover:scale-90 hover:bg-slate-500 duration-300">Sold Out</button>}
+                </div>
+              </div>
+
+            </div>
+          ))
+        }
       </div>
+
     </div>
   );
   
