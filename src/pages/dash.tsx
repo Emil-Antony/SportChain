@@ -34,6 +34,7 @@ export default function Dash() {
   const [balance, setBalance] = useState<number>(0);
   const [provider,setProvider] = useState<ethers.BrowserProvider | null>(null)
   const [sportNFT, setsportNFT] = useState<ethers.Contract | null>(null)
+  const [occasions,setOccasion] = useState([])
 
   const router = useRouter();
 async function setContracts(){
@@ -43,6 +44,19 @@ async function setContracts(){
   const sportNFT = new ethers.Contract("0x5fbdb2315678afecb367f032d93f642f64180aa3",sportnftabi,provider);
   setsportNFT(sportNFT);
   console.log("Contract address: ",await sportNFT.getAddress());
+  const totalOccasions = await sportNFT.totalOccasions();
+  console.log({totalOccasions:totalOccasions.toString() });
+  const occasions = [];
+  for(let i=1; i<=totalOccasions; i++){
+    const occa = await sportNFT.getOccasion(i );
+    occasions.push(occa);
+  }
+  setOccasion(occasions);
+  for(let i=0 ; i<totalOccasions;i++){
+    console.log(occasions[i]);
+  }
+  
+
 }
 function goHome (){
   router.push("/");
@@ -159,7 +173,7 @@ const balanceUpdate = async () => {
       </div>
       <div style={{height: '1px'}} className=" bg-gradient-to-r from-transparent via-gray-800 to-transparent" />
       <div>
-        hello
+        
       </div>
     </div>
   );
