@@ -11,7 +11,7 @@ import {
   getBalance,
   connectToMetaMask,
 } from "@/imports/ethersfn";
-import { MetaSVG } from "@/imports/svg";
+import { MetaSVG, SvgMeta } from "@/imports/svg";
 
 const Home: React.FC = () => {
   const [account, setAccount] = useState<string | null>(null);
@@ -135,38 +135,47 @@ const Home: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-black-100">
-      <h1 className="text-2xl text-white mb-4">
-        Welcome to{" "}
-        <span className="font-extrabold text-transparent text-3xl sm:text-4xl xl:text-5xl bg-clip-text bg-gradient-to-r from-green-300 via-blue-500 to-purple-600 bg-transparent h-full">
-          SportChain
-        </span>
-      </h1>
-      {isMetaMaskInstalled ? (
-        <>
-          {account ? (
-            <div className="flex flex-col justify-items-center">
-              <p className="mt-4">Connected Account: {account}</p>
-              <p className="mt-4">Balance: {balance} MATIC</p>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={connectWallet}
-              class="text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-3 mx-4 text-center inline-flex items-center dark:focus:ring-gray-600 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:bg-gray-700 me-2 mb-2"
-            >
-              <MetaSVG />
-              Connect with MetaMask
-            </button>
-          )}
-        </>
-      ) : (
-        <p className="text-red-500">
-          MetaMask is not installed. Please install it to continue.
-        </p>
-      )}
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800">
+      <div className="p-8 mb-6 mx-6 lg:mx-20 bg-slate-900 rounded-xl shadow-xl transform transition duration-500 hover:scale-105">
+        <h1 className="text-3xl text-white mb-6 text-center">
+          Welcome to{" "}
+          <span className="font-extrabold text-transparent bg-clip-text text-4xl sm:text-5xl xl:text-6xl bg-gradient-to-r from-green-400 via-blue-500 to-purple-600 animate-gradient">
+            SportChain
+          </span>
+        </h1>
+  
+        {isMetaMaskInstalled ? (
+          <>
+            {account ? (
+              <div className="flex flex-col items-center">
+                <p className="text-lg text-gray-200 mt-4">Connected Account:</p>
+                <p className="text-xl text-white font-mono">{account}</p>
+                <p className="text-lg text-gray-200 mt-4">Balance:</p>
+                <p className="text-xl text-white font-mono">{balance} MATIC</p>
+              </div>
+            ) : (
+              <div className="flex justify-center">
+                <button
+                  type="button"
+                  onClick={connectWallet}
+                  className="flex items-center justify-center px-6 py-3 mt-6 text-lg font-semibold text-gray-900 bg-white border border-gray-200 rounded-lg shadow-md hover:bg-gray-100 focus:ring-4 focus:ring-gray-300 transform transition-all duration-300 hover:scale-105 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:bg-gray-700 dark:focus:ring-gray-600"
+                >
+                  <MetaSVG className="mr-2" />
+                  Connect with MetaMask
+                </button>
+              </div>
+            )}
+          </>
+        ) : (
+          <p className="text-lg text-red-500 mt-6 text-center">
+            MetaMask is not installed. Please install it to continue.
+          </p>
+        )}
+      </div>
     </div>
   );
+  
+  
 };
 
 export default Home;

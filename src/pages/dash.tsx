@@ -12,7 +12,7 @@ import {
 } from "@/imports/ethersfn";
 import { Tooltip } from 'react-tooltip';
 import sportnftabi from '@/abis/sportnft.json';
-import contractconfig from "../config.json";
+import SeatChart from "./components/seatchart";
 
 const amoyTestnetParams = {
     chainId: "0x7A69",
@@ -34,35 +34,22 @@ export default function Dash() {
   const [balance, setBalance] = useState<number>(0);
   const [provider,setProvider] = useState<ethers.BrowserProvider | null>(null)
   const [sportNFT, setsportNFT] = useState<ethers.Contract | null>(null)
-  const [occasions,setOccasion] = useState([])
+  const [occasions,setOccasion] = useState<any>([])
+  const [showModal, setShowModal] = useState<boolean>(false)
+  const [selectedOccasion, setSelectedOccasion] = useState<any>(null)
 
   const router = useRouter();
 async function setContracts(){
   const provider = new ethers.BrowserProvider(window.ethereum);
   setProvider(provider);
-  // const network = provider.network;
-  const sportNFT = new ethers.Contract("0x5fbdb2315678afecb367f032d93f642f64180aa3",sportnftabi,provider);
-  setsportNFT(sportNFT);
-  console.log("Contract address: ",await sportNFT.getAddress());
-  const totalOccasions = await sportNFT.totalOccasions();
-  console.log({totalOccasions:totalOccasions.toString() });
-  const occasions = [];
-  for(let i=1; i<=totalOccasions; i++){
-    const occa = await sportNFT.getOccasion(i);
-    occasions.push(occa);
-  }
-  setOccasion(occasions);
-  for(let i=0 ; i<totalOccasions;i++){
-    let cost = ethers.formatEther(occasions[i].cost)
-    console.log(occasions[i].ticket);
-  }
-  
-
+  const sportNFTs = new ethers.Contract("0x5fbdb2315678afecb367f032d93f642f64180aa3",sportnftabi,provider);
+  setsportNFT(sportNFTs);
 }
 function goHome (){
   router.push("/");
 }
 const disconnectMetaMask = () => {
+  console.log("disconnectedd");
   goHome(); // Reset balance when disconnected
 };
 const balanceUpdate = async () => {
@@ -70,6 +57,11 @@ const balanceUpdate = async () => {
   if (typeof balance !== "undefined") {
     setBalance(balance);
   }
+};
+
+const togglePop = (occasion: any) => {
+  setSelectedOccasion(occasion);
+  showModal ? setShowModal(false) : setShowModal(true)
 };
 
   useEffect(() => {
@@ -86,6 +78,27 @@ const balanceUpdate = async () => {
       }
     })();
   }, [isMetaMaskInstalled]);
+
+  useEffect(()=>{
+    const handleSetContract = async () =>{
+      if(sportNFT){
+        console.log("THe contract object is ",sportNFT)
+        console.log("Contract address: ",await sportNFT.getAddress());
+        const totalOccasions = await sportNFT.totalOccasions();
+        console.log({totalOccasions:totalOccasions.toString() });
+        const occasions = [];
+        for(let i=1; i<=totalOccasions; i++){
+          const occa = await sportNFT.getOccasion(i);
+          occasions.push(occa);
+        }
+        setOccasion(occasions);
+        for(let i=0 ; i<totalOccasions;i++){
+          let cost = ethers.formatEther(occasions[i].cost)
+        }
+      }
+    }
+    handleSetContract();
+  },[sportNFT])
 
   useEffect(() => {
     balanceUpdate();
@@ -107,6 +120,7 @@ const balanceUpdate = async () => {
       handleChain();
       balanceUpdate();
     };
+
 
     const handleChain = async () => {
       if (!(await checkChain(amoyTestnetParams.chainId))) {
@@ -164,7 +178,7 @@ const balanceUpdate = async () => {
       
       {/* Centered Title Section */}
       <div className="flex"> 
-        <div className="group rounded text-sm font-semibold cursor-pointer  pb-2 w-fit px-20 ms-20  mt-20 pb-5">
+        <div className="group rounded text-sm font-semibold cursor-pointer  pb-2 w-fit px-20 ms-20  mt-20 ">
           <div className=" bg-transparent w-fit h-full p-1.5">
             <h1 className="font-extrabold text-transparent text-xl sm:text-4xl xl:text-4xl bg-clip-text bg-white bg-transparent">
               Event Tickets
@@ -188,8 +202,8 @@ const balanceUpdate = async () => {
                 </div>
                 <div className="text-right">
                   {Number(occasion.tickets) > 0 ?
-                  <button className="text-m border border-lg border-transparent rounded p-1 w-20 font-mono bg-green-500 transition duration-200 text-white hover:scale-110 hover:bg-emerald-500 duration-300">{ethers.formatEther(occasion.cost)} ETH</button>:
-                  <button className="text-m border border-lg border-transparent rounded p-1 w-20 font-mono bg-red-600 transition duration-200 text-white hover:scale-90 hover:bg-slate-500 duration-300">Sold Out</button>}
+                  <button className="text-m border border-lg border-transparent rounded p-1 w-20 font-mono bg-green-500 transition duration-200 text-white hover:scale-110 hover:bg-emerald-500 "onClick={() => togglePop(occasion)}>{ethers.formatEther(occasion.cost)} ETH</button>:
+                  <button className="text-m border border-lg border-transparent rounded p-1 w-20 font-mono bg-red-600 transition duration-200 text-white hover:scale-90 hover:bg-slate-500 ">Sold Out</button>}
                 </div>
               </div>
 
@@ -197,7 +211,17 @@ const balanceUpdate = async () => {
           ))
         }
       </div>
+      <div>
+        {showModal &&(
+          <SeatChart
+            occasion={selectedOccasion}
+            sportNFT={sportNFT}
+            setShowModal={setShowModal}
+            provider={provider}
+          />
 
+        )}
+      </div>
     </div>
   );
   
