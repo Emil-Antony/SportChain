@@ -1,0 +1,15 @@
+{
+    "name": "tokyo sl Ticket",
+    "description": "This NFT represents a ticket for the tokyo sl sports event.",
+    "image": "http://localhost:3000/tokyo.jpg",
+    "attributes": [
+      {
+        "trait_type": "Location",
+        "value": "Stadium"
+      },
+      {
+        "trait_type": "Date",
+        "value": "2024-12-01"
+      }
+    ]
+  }

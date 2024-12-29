@@ -74,7 +74,7 @@ export async function checkChain(chainId: string) {
 	// console.log("Current chain ID:", currentChainId); // Log current chain ID
 
 	if(currentChainId !== chainId) {
-		alert("Please connect to Polygon Amoy!");
+		alert("Please connect to Hardhat chain!");
 		return false
 	} else {
 		return true
