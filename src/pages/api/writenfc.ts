@@ -16,6 +16,7 @@ type Data = {
         console.log("Received text:", account);
         console.log("Received number:", id);
         const msg = account + ":" + id;
+        console.log("input is: "+ msg);
         port.open(function (err) {
             if (err) {
               return console.log('Error opening port: ', err.message)
@@ -23,11 +24,14 @@ type Data = {
           
             // Because there's no callback to write, write errors will be emitted on the port:
             port.write(msg);
+            console.log("written");
             port.on("data",function(data){
                 console.log(data.toString());
+                
             })
+            port.close();
           })
-          port.close();
+
         // Respond with a success message
         res.status(200).json({info: "working!!" });
         }

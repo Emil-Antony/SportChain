@@ -57,8 +57,14 @@ export default function TicketList({account}:{account:string}){
         },
         body: JSON.stringify({account,id}),  // Sending data as a JSON string
       });
-      const data = await response.json();
-      console.log(data);
+      if (response.ok) { // Check if the status code is in the range 200-299
+        const data = await response.json();
+        console.log('Response data:', data);
+        alert('Place your NFC tag to write data!');
+      } else {
+        console.log('Error occurred:', response.status, response.statusText);
+        alert(`Failure! Error: ${response.status} ${response.statusText}`);
+      }
     }catch (error){
         console.error(error);
     }
