@@ -12,12 +12,15 @@ import {
   connectToMetaMask,
 } from "@/imports/ethersfn";
 import { MetaSVG, SvgMeta } from "@/imports/svg";
+import { EVENTCREATORS } from "@/imports/walletdata";
 
 const Home: React.FC = () => {
   const [account, setAccount] = useState<string | null>(null);
   const [isMetaMaskInstalled, setIsMetaMaskInstalled] =
     useState<boolean>(false);
   const [balance, setBalance] = useState<number>(0);
+
+  const deployeraccounts = ["0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266".toLowerCase()];
 
   const amoyTestnetParams = {
     chainId: "0x7A69",
@@ -99,6 +102,10 @@ const Home: React.FC = () => {
     router.push("/dash");
   };
 
+  const goHost = () => {
+    router.push("/host");
+  }
+
   const disconnectMetaMask = () => {
     setAccount(null);
     setBalance(0); // Reset balance when disconnected
@@ -128,7 +135,12 @@ const Home: React.FC = () => {
 
     if (typeof connectedAcc !== "undefined") {
       setAccount(connectedAcc);
+      if(EVENTCREATORS.includes(connectedAcc)){
+        goHost();
+      }
+      else{
       goDash();
+      }
     } else {
       return;
     }

@@ -1,15 +1,15 @@
 {
-  "name": "Match 1 Ticket",
+  "name": "Match 1",
   "description": "This NFT represents a ticket for the match 1 sports event.",
   "image": "http://localhost:3000/tokyo.jpg",
   "attributes": [
     {
       "trait_type": "Location",
-      "value": "Stadium"
+      "value": "Kaloor, Ernakulam"
     },
     {
       "trait_type": "Date",
-      "value": "2024-12-01"
+      "value": "May 31"
     }
   ]
 }
