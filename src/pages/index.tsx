@@ -12,15 +12,16 @@ import {
   connectToMetaMask,
 } from "@/imports/ethersfn";
 import { MetaSVG, SvgMeta } from "@/imports/svg";
-import { EVENTCREATORS } from "@/imports/walletdata";
+import { EVENTCREATORS, ADMIN_WALLET } from "@/imports/walletdata";
+import { fetchEventCreators } from "@/imports/adminFns";
 
 const Home: React.FC = () => {
   const [account, setAccount] = useState<string | null>(null);
   const [isMetaMaskInstalled, setIsMetaMaskInstalled] =
     useState<boolean>(false);
   const [balance, setBalance] = useState<number>(0);
+  const [hosts, setHosts] =  useState<{ name: string; address: string}[]>([])
 
-  const deployeraccounts = ["0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266".toLowerCase()];
 
   const amoyTestnetParams = {
     chainId: "0x7A69",
@@ -37,6 +38,7 @@ const Home: React.FC = () => {
   const router = useRouter();
 
   useEffect(() => {
+    fetchEventCreators().then(setHosts)
     setIsMetaMaskInstalled(checkMetaMask());
   }, []);
 
@@ -135,10 +137,14 @@ const Home: React.FC = () => {
 
     if (typeof connectedAcc !== "undefined") {
       setAccount(connectedAcc);
-      if(EVENTCREATORS.includes(connectedAcc)){
+      if(connectedAcc == ADMIN_WALLET){
+        router.push("/admin");
+      }
+      else if(hosts.some(host => host.address === connectedAcc)){
         goHost();
       }
       else{
+        console.log("go Dash")
       goDash();
       }
     } else {

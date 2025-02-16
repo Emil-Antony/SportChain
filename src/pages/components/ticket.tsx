@@ -19,6 +19,9 @@ export default function Ticket({ data }: { data: nftjson }) {
         <div className="text-center">
           <h3 className="font-extrabold text-xl text-white mb-2">{data.name}</h3>
           <p className="text-gray-300 text-sm italic mb-1">
+            #{data.id}
+          </p>
+          <p className="text-gray-300 text-sm italic mb-1">
             {data.location}
           </p>
           <p className="text-gray-400 text-xs mb-4">

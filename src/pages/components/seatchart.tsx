@@ -36,9 +36,17 @@
         method: "eth_requestAccounts",
       });
       const signer = await provider.getSigner(accounts[0]);
-      const transaction = await sportNFT.connect(signer).mintNFT(occasion.id, _seat, { value: occasion.cost })
-      await transaction.wait()
-
+      try{
+        const transaction = await sportNFT.connect(signer).mintNFT(occasion.id, _seat, { value: occasion.cost })
+        await transaction.wait()
+        alert("Ticket bought successfully");
+      }catch (error) {
+        if (error.code === "ACTION_REJECTED") {
+            alert("Transaction was rejected by the user.");
+        } else {
+            console.error("Unexpected error:", error);
+        }
+      }
       setHasSold(true)
     }
 

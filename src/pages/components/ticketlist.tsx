@@ -4,6 +4,7 @@ import sportnftabi from '@/abis/sportnft.json';
 import React, {useEffect, useState} from "react";
 import Ticket from "./ticket";
 import Chatbox from "./Chatbox";
+import { timeStamp } from "console";
 
 export interface nftjson {
     name: string,
@@ -11,7 +12,10 @@ export interface nftjson {
     desc: string,
     location: string,
     date: string,
-    id: number
+    id: number,
+    seat: number,
+    timestamp: number,
+    timestring: string
 }
 
 export default function TicketList({account}:{account:string}){
@@ -96,16 +100,23 @@ export default function TicketList({account}:{account:string}){
               for (let i = 0; i < Number(balance); i++) {
               const tokenId = await contract.tokenOfOwnerByIndex(account, i);
               const tokenURI = await contract.tokenURI(tokenId);
-              console.log(tokenURI);
               const response = await fetch(tokenURI);
               const metadata = await response.json();
+              const mintedAt = Number(await contract.getTimeStamp(tokenId)); //unix timestamp
+              const mint_date = new Date(mintedAt * 1000); //
+              const mint_string= mint_date.toLocaleString();
+              console.log(mint_date.toLocaleString());
               const name = metadata.name;
               const desc = metadata.description;
               const image = metadata.image;
               const location = metadata.attributes.find(attr => attr.trait_type === "Location")?.value;
               const date = metadata.attributes.find(attr => attr.trait_type === "Date")?.value;
               const tokenidnum = Number(tokenId); // the number version of tokenid
-              const ticketdata = {name: name ,desc: desc ,image: image ,location: location ,date: date, id: tokenidnum};
+              var seatno = tokenidnum % 100;
+              if(seatno==0){
+                seatno = 100;
+              }
+              const ticketdata = {name: name ,desc: desc ,image: image ,location: location ,date: date, id: tokenidnum, seat: seatno, timestamp: mintedAt, timestring: mint_string};
               NFTs.push(ticketdata);
               }
               setOwnedNFTs(NFTs);
@@ -132,24 +143,31 @@ export default function TicketList({account}:{account:string}){
           className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-all duration-300 ${modalAnimation}`}
         >
           <div className="bg-[#0a0813] p-8 rounded-xl w-96 max-w-lg shadow-2xl transform transition-transform duration-500 animate-scaleUp">
-            <div className="flex justify-between items-center border-b pb-4 mb-4">
-              <h2 className="text-xl font-semibold text-white text-center w-full">{selectedTicket.name}</h2>
+            <div className="flex justify-between border-b  pb-4 mb-4">
+              <h5 className="text-md font-semibold mt-1 text-gray-600 order-1 ">#{selectedTicket.id}</h5>
+              <h2 className="text-xl font-semibold text-white text-center order-2 w-full pe-5">{selectedTicket.name}</h2>
               <button
                 onClick={closeModal}
-                className="text-xl font-bold text-white transition-colors duration-300 hover:text-[#fd3980] focus:outline-none absolute top-4 right-4"
+                className="text-xl font-bold text-white order-4 transition-colors duration-300 hover:text-[#fd3980] focus:outline-none absolute top-4 right-4"
               >
                 &times;
               </button>
+  
             </div>
-
+            
+            
             {/* Ticket Description */}
             <p className="text-white mb-4">{selectedTicket.desc}</p>
+            <p className="text-slate-200 mb-1">Seat Number: {selectedTicket.seat}</p>
+            <p className="text-slate-600 mb-1">TimeStamp: {selectedTicket.timestamp}</p>
+            <p className="text-slate-600 mb-4">{selectedTicket.timestring}</p>
 
             {/* Ticket Location */}
-            <p className="text-white text-lg italic mb-2 text-center">{selectedTicket.location}</p>
+            <p className="text-white text-lg italic mb-2 mt-3 text-center">{selectedTicket.location}</p>
 
             {/* Ticket Date */}
             <p className="text-white text-lg text-center">{selectedTicket.date}</p>
+            
 
             {/* Buttons Section */}
             <div className="flex justify-between mt-8 items-center">

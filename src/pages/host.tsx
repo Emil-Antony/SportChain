@@ -13,6 +13,8 @@ import {
 import { Tooltip } from 'react-tooltip';
 import sportnftabi from '@/abis/sportnft.json';
 import { createevent } from "@/imports/apitest";
+import { ADMIN_WALLET } from "@/imports/walletdata";
+import { fetchEventCreators } from "@/imports/adminFns";
 
 const amoyTestnetParams = {
     chainId: "0x7A69",
@@ -33,7 +35,6 @@ const Host: React.FC = () => {
     const [eventDate, setEventDate] = useState<string>("");
     const [eventTime, setEventTime] = useState<string>("");
     const [location, setLocation] = useState<string>("");
-
     const [account, setAccount] = useState<string | null>(null);
     const [isMetaMaskInstalled, setIsMetaMaskInstalled] = useState<boolean>(false);
     const [balance, setBalance] = useState<number>(0);
@@ -72,7 +73,13 @@ const Host: React.FC = () => {
           const connectedAcc = await getConnectedAccount();
     
           if (typeof connectedAcc !== "undefined") {
+            const hosts = await fetchEventCreators();
+            if(!hosts.some(host => host.address === connectedAcc)){
+              router.push("/dash");
+            }
             setAccount(connectedAcc);
+          }else{
+            router.push("/");
           }
         })();
     }, [isMetaMaskInstalled]);

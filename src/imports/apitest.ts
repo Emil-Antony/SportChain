@@ -15,7 +15,7 @@ export async function createevent(name:string ,cost: string ,tickets: string, da
     const dateNew = new Date(date)
     const stringDate =  dateNew.toLocaleString('en-US', options);
     console.log(stringDate);
-    const provider = new ethers.JsonRpcProvider("http://127.0.0.1:8545/");
+    const provider = new ethers.BrowserProvider(window.ethereum);
     const signer : JsonRpcSigner = await provider.getSigner();
     const sportNFT = new ethers.Contract(CONTRACT_ADDRESS, nftabi, signer);
 

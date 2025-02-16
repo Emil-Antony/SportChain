@@ -11,9 +11,11 @@ import {
   connectToMetaMask,
 } from "@/imports/ethersfn";
 import { Tooltip } from 'react-tooltip';
+import { fetchEventCreators } from "@/imports/adminFns";
 import sportnftabi from '@/abis/sportnft.json';
 import SeatChart from "./components/seatchart"; 
 import TicketList from "./components/ticketlist";
+import { ADMIN_WALLET } from "@/imports/walletdata";
 
 const amoyTestnetParams = {
     chainId: "0x7A69",
@@ -41,30 +43,31 @@ export default function Dash() {
   const [gameCoins, setGameCoins] = useState<Number>(0)
 
   const router = useRouter();
-async function setContracts(){
-  const provider = new ethers.BrowserProvider(window.ethereum);
-  setProvider(provider);
-  const sportNFTs = new ethers.Contract("0x5fbdb2315678afecb367f032d93f642f64180aa3",sportnftabi,provider);
-  setsportNFT(sportNFTs);
-}
-function goHome (){
-  router.push("/");
-}
-const disconnectMetaMask = () => {
-  console.log("disconnectedd");
-  goHome(); // Reset balance when disconnected
-};
-const balanceUpdate = async () => {
-  const balance = await getBalance(account);
-  if (typeof balance !== "undefined") {
-    setBalance(balance);
-  }
-};
 
-const togglePop = (occasion: any) => {
-  setSelectedOccasion(occasion);
-  showModal ? setShowModal(false) : setShowModal(true)
-};
+  async function setContracts(){
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    setProvider(provider);
+    const sportNFTs = new ethers.Contract("0x5fbdb2315678afecb367f032d93f642f64180aa3",sportnftabi,provider);
+    setsportNFT(sportNFTs);
+  }
+  function goHome (){
+    router.push("/");
+  }
+  const disconnectMetaMask = () => {
+    console.log("disconnectedd");
+    goHome(); // Reset balance when disconnected
+  };
+  const balanceUpdate = async () => {
+    const balance = await getBalance(account);
+    if (typeof balance !== "undefined") {
+      setBalance(balance);
+    }
+  };
+
+  const togglePop = (occasion: any) => {
+    setSelectedOccasion(occasion);
+    showModal ? setShowModal(false) : setShowModal(true)
+  };
 
   useEffect(() => {
     setIsMetaMaskInstalled(checkMetaMask());
@@ -74,9 +77,18 @@ const togglePop = (occasion: any) => {
   useEffect(() => {
     (async () => {
       const connectedAcc = await getConnectedAccount();
-
       if (typeof connectedAcc !== "undefined") {
+        if(connectedAcc === ADMIN_WALLET){
+          router.push("/admin");
+        }
+        const hosts = await fetchEventCreators();
+        if(hosts.some(host => host.address === connectedAcc)){
+          console.log("gohost");
+          router.push("/host");
+        }
         setAccount(connectedAcc);
+      }else{
+        router.push("/");
       }
     })();
   }, [isMetaMaskInstalled]);
