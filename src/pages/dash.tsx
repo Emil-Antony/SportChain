@@ -96,7 +96,7 @@ export default function Dash() {
   useEffect(()=>{
     const handleSetContract = async () =>{
       if(sportNFT){
-        console.log("THe contract object is ",sportNFT)
+        console.log("The contract object is ",sportNFT)
         console.log("Contract address: ",await sportNFT.getAddress());
         const totalOccasions = await sportNFT.totalOccasions();
         console.log({totalOccasions:totalOccasions.toString() });

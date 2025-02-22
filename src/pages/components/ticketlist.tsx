@@ -18,7 +18,7 @@ export interface nftjson {
     timestring: string
 }
 
-export default function TicketList({account}:{account:string}){
+export default function TicketList({account}){
   const [balance,setBalance]= useState<ethers.BigNumber|null>(null);
   const [contract,setContract]= useState<ethers.Contract|null>(null);
   const [ownedNFTs,setOwnedNFTs]= useState<Array<nftjson>|null>(null);
@@ -27,7 +27,6 @@ export default function TicketList({account}:{account:string}){
   const [modalAnimation, setModalAnimation] = useState<string>('opacity-0 scale-95');
   const [isChatOpen, setIsChatOpen] = useState(false);
 
-  
   const openModal = (ticket: nftjson) => {
       setIsModalOpen(true);
       setSelectedTicket(ticket);
@@ -81,7 +80,6 @@ export default function TicketList({account}:{account:string}){
   }, [isModalOpen]);
 
   useEffect(()=>{
-      console.log("rerendered");
       const provider = new ethers.BrowserProvider(window.ethereum);  // v6 syntax for provider
       const nftcontract = new ethers.Contract(CONTRACT_ADDRESS, sportnftabi, provider);
       setContract(nftcontract);
