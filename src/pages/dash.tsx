@@ -13,9 +13,10 @@ import {
 import { Tooltip } from 'react-tooltip';
 import { fetchEventCreators } from "@/imports/adminFns";
 import sportnftabi from '@/abis/sportnft.json';
+import gamecoinabi from '@/abis/gamecoin.json'
 import SeatChart from "./components/seatchart"; 
 import TicketList from "./components/ticketlist";
-import { ADMIN_WALLET } from "@/imports/walletdata";
+import { ADMIN_WALLET, GAMECOIN_ADDRESS, CONTRACT_ADDRESS } from "@/imports/walletdata";
 
 const amoyTestnetParams = {
     chainId: "0x7A69",
@@ -40,6 +41,7 @@ export default function Dash() {
   const [showModal, setShowModal] = useState<boolean>(false)
   const [selectedOccasion, setSelectedOccasion] = useState<any>(null)
   const [selectedTab, setSelectedTab] = useState<string>("Events")
+  const [GCNcontract, setGCNcontract] = useState<ethers.Contract | null>(null)
   const [gameCoins, setGameCoins] = useState<Number>(0)
 
   const router = useRouter();
@@ -47,9 +49,20 @@ export default function Dash() {
   async function setContracts(){
     const provider = new ethers.BrowserProvider(window.ethereum);
     setProvider(provider);
-    const sportNFTs = new ethers.Contract("0x5fbdb2315678afecb367f032d93f642f64180aa3",sportnftabi,provider);
+    const sportNFTs = new ethers.Contract(CONTRACT_ADDRESS,sportnftabi,provider);
+    const gameCoinContract = new ethers.Contract(GAMECOIN_ADDRESS,gamecoinabi,provider)
     setsportNFT(sportNFTs);
+    setGCNcontract(gameCoinContract);
   }
+
+  const calcGameCoin = async() =>{
+    console.log("entered")
+    console.log(GCNcontract,account);
+    const gameCoinBalance = await GCNcontract.balanceOf(account);
+    console.log("gamecoin balance is ",gameCoinBalance);
+    setGameCoins(Number(ethers.formatEther(gameCoinBalance)));
+  }
+
   function goHome (){
     router.push("/");
   }
@@ -72,6 +85,7 @@ export default function Dash() {
   useEffect(() => {
     setIsMetaMaskInstalled(checkMetaMask());
     setContracts();
+    
   }, []);
 
   useEffect(() => {
@@ -86,6 +100,7 @@ export default function Dash() {
           console.log("gohost");
           router.push("/host");
         }
+
         setAccount(connectedAcc);
       }else{
         router.push("/");
@@ -165,6 +180,15 @@ export default function Dash() {
       }
     };
   }, [account]);
+
+  useEffect(()=>{
+      if (GCNcontract && account) {
+        console.log("yaaay")
+        calcGameCoin();
+    } else {
+        console.warn("Cannot calculate balance");
+    }
+  },[account,GCNcontract]);
 
   return (
     <div>
@@ -318,6 +342,7 @@ export default function Dash() {
             sportNFT={sportNFT}
             setShowModal={setShowModal}
             provider={provider}
+            calcGameCoin={calcGameCoin}
           />
         )}
       </div>

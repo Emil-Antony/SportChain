@@ -10,13 +10,11 @@ export function checkMetaMask() {
 }
 
 export async function getConnectedAccount() {
-	console.log("getAcount fn called");
 	if (!checkMetaMask()){ 
 		console.log("check me");
 		return;
 	}
 	try {
-		console.log("try catch");
 		const accounts = await window.ethereum.request({
 			method: "eth_accounts",
 		});

@@ -11,29 +11,35 @@ import {
 } from "@/imports/ethersfn";
 import { Tooltip } from 'react-tooltip';
 import sportnftabi from '@/abis/sportnft.json';
-import { PlusCircle, Trash2 } from 'lucide-react';
+import { PlusCircle, Trash2, Award, Users } from 'lucide-react';
 import AddHost from "./components/addhost";
-import { amoyTestnetParams, ADMIN_WALLET, EVENTCREATORS } from "@/imports/walletdata";
-import { fetchEventCreators, addEventCreator, deleteEventCreator} from "@/imports/adminFns";
+import AddReward from "./components/addReward";
+import { amoyTestnetParams, ADMIN_WALLET, CONTRACT_ADDRESS } from "@/imports/walletdata";
+import { fetchEventCreators, addEventCreator, deleteEventCreator} from "@/imports/adminFns"
+import { fetchAllRewards, addNewReward,deleteReward } from "@/imports/rewardFns";
 
 const Admin: React.FC = () => {
-
     const [account, setAccount] = useState<string | null>(null);
     const [isMetaMaskInstalled, setIsMetaMaskInstalled] = useState<boolean>(false);
     const [balance, setBalance] = useState<number>(0);
-    const [provider,setProvider] = useState<ethers.BrowserProvider | null>(null)
-    const [sportNFT, setsportNFT] = useState<ethers.Contract | null>(null)
+    const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
+    const [sportNFT, setSportNFT] = useState<ethers.Contract | null>(null);
     const [hosts, setHosts] = useState<{ name: string; address: string }[]>([]);
-    const [hostModal,setHostModal] = useState<boolean>(false)
+    const [rewards, setRewards] = useState<any[]>([]);
+    const [hostModal, setHostModal] = useState<boolean>(false);
+    const [rewardModal, setRewardModal] = useState<boolean>(false);
+    const [activeTab, setActiveTab] = useState<'hosts' | 'rewards'>('hosts');
 
     const router = useRouter();
+    
     async function setContracts(){
         const provider = new ethers.BrowserProvider(window.ethereum);
         setProvider(provider);
-        const sportNFTs = new ethers.Contract("0x5fbdb2315678afecb367f032d93f642f64180aa3",sportnftabi,provider);
-        setsportNFT(sportNFTs);
+        const sportNFTs = new ethers.Contract(CONTRACT_ADDRESS, sportnftabi, provider);
+        setSportNFT(sportNFTs);
     }
-    function goHome (){
+    
+    function goHome(){  
         router.push("/");
     }
 
@@ -45,20 +51,35 @@ const Admin: React.FC = () => {
       setHostModal(false);
     }
 
-    const handleSubmit = async (newhost) => {
+    function openReward(){
+      setRewardModal(true);
+    }
+
+    function closeReward(){
+      setRewardModal(false);
+    }
+
+    const handleSubmit = async (newhost:any) => {
       if (!newhost.name || !newhost.address) return;
       try {
         const name = newhost.name;
         const address = newhost.address.toLowerCase();
         await addEventCreator({name, address});
-        setHosts([...hosts, {name,address}]); // Update UI
+        setHosts([...hosts, {name, address}]); // Update UI
       } catch (error) {
         alert(error.message);
       }
     };
 
+    const handleSubmitReward =async(newreward:any) =>{
+      console.log(newreward)
+      const name= newreward.name;
+      const price = newreward.cost;
+      await addNewReward(newreward);
+      setRewards((prevRewards) => [...prevRewards, {name,price}]);
+    }
 
-    const deleteHost = async (address:string) => {
+    const deleteHost = async (address: string) => {
       const isConfirmed = window.confirm("Are you sure you want to delete this host?");
       if (!isConfirmed) {
         return; // If user cancels, do nothing
@@ -66,15 +87,25 @@ const Admin: React.FC = () => {
       try{
         await deleteEventCreator(address);
         setHosts(hosts.filter((host) => host.address !== address));
-      }catch(error){
+      } catch(error){
         alert(error.message);
       }
     }
 
+    const removeReward = async (name: string) => {
+      const confirm = window.confirm("Do you want to remove this reward?");
+      if(!confirm){
+        return
+      }
+      await deleteReward(name);
+      setRewards((prevRewards) => prevRewards.filter((reward) => reward.name !== name))
+    };
+    
     const disconnectMetaMask = () => {
         console.log("disconnectedd");
         goHome(); // Reset balance when disconnected
     };
+    
     const balanceUpdate = async () => {
       const balance = await getBalance(account);
       if (typeof balance !== "undefined") {
@@ -84,9 +115,9 @@ const Admin: React.FC = () => {
 
     useEffect(() => {
         fetchEventCreators().then(setHosts);
+        fetchAllRewards().then((data) => {setRewards(data);});
         setIsMetaMaskInstalled(checkMetaMask());
         setContracts();
-        
     }, []);
 
     useEffect(() => {
@@ -109,8 +140,6 @@ const Admin: React.FC = () => {
         })();
     }, [isMetaMaskInstalled]);
 
-    
-
     useEffect(() => {
         balanceUpdate();
     
@@ -131,7 +160,6 @@ const Admin: React.FC = () => {
           handleChain();
           balanceUpdate();
         };
-    
     
         const handleChain = async () => {
           if (!(await checkChain(amoyTestnetParams.chainId))) {
@@ -166,7 +194,7 @@ const Admin: React.FC = () => {
     return(
       <div>
         <div className="mb-3">
-          <nav className="dark:bg-black fixed w-full z-20 top-0 start-0 border-b border-gray-600 ">
+          <nav className="dark:bg-black fixed w-full z-20 top-0 start-0 border-b border-gray-600">
               <div className="max-w-screen flex flex-wrap items-center justify-between p-4">
               <div className="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse"> 
                   <span className="my-1 text-white px-3 py-1">Account:</span>
@@ -190,53 +218,176 @@ const Admin: React.FC = () => {
         <div className="w-full min-h-screen bg-gray-1000 py-24">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h1 className="text-3xl font-bold text-white mb-2">Event Creators</h1>
-                  <div className="h-1 w-20 bg-gradient-to-r from-green-400 to-green-600"></div>
-                </div>
-                <button 
-                  onClick={openAddHost}
-                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-400 to-green-600 rounded-lg text-white font-medium hover:opacity-90 transition-opacity"
+              
+              {/* Tabs */}
+              <div className="flex border-b border-gray-700 mb-6">
+                <button
+                  className={`flex items-center px-6 py-3 font-medium text-sm transition-colors ${
+                    activeTab === 'hosts' 
+                      ? 'text-green-400 border-b-2 border-green-400' 
+                      : 'text-gray-400 hover:text-gray-300'
+                  }`}
+                  onClick={() => setActiveTab('hosts')}
                 >
-                  <PlusCircle className="w-5 h-5" />
-                  <span>Add New Host</span>
+                  <Users className="w-4 h-4 mr-2" />
+                  Event Creators
+                </button>
+                <button
+                  className={`flex items-center px-6 py-3 font-medium text-sm transition-colors ${
+                    activeTab === 'rewards' 
+                      ? 'text-green-400 border-b-2 border-green-400' 
+                      : 'text-gray-400 hover:text-gray-300'
+                  }`}
+                  onClick={() => setActiveTab('rewards')}
+                >
+                  <Award className="w-4 h-4 mr-2" />
+                  Rewards
                 </button>
               </div>
-
-              <div className="space-y-4">
-                {hosts.map(({address, name}, index) => (
-                  <div 
-                    key={index}
-                    className="bg-gray-900 rounded-lg p-6 hover:bg-gray-800 transition-all duration-300 border border-gray-800 hover:border-gray-700"
-                  >
+              
+              {/* Host Management Tab */}
+              {activeTab === 'hosts' && (
+                <div className="bg-black rounded-xl border border-gray-800 shadow-lg overflow-hidden">
+                  <div className="bg-gray-900 px-6 py-4 border-b border-gray-700">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-400 to-green-600 flex items-center justify-center text-white font-bold">
-                          {index + 1}
-                        </div>
-                        <div>
-                          <div className="text-white text-sm mb-1">{name}</div>
-                          <div className="text-gray-400 font-mono text-sm">
-                            {address}
-                          </div>
-                        </div>
+                      <div>
+                        <h2 className="text-xl font-semibold text-white">Event Creators</h2>
+                        <div className="h-1 w-16 bg-gradient-to-r from-green-400 to-green-600 mt-2"></div>
                       </div>
-
-                      <button className="h-8 w-8 rounded-full bg-red-500 flex items-center justify-center hover:opacity-80 transitiop:opacity"
-                        onClick={() => deleteHost(address)}>
-                        <Trash2 size={20} />
+                      <button 
+                        onClick={openAddHost}
+                        className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-400 to-green-600 rounded-lg text-white font-medium hover:opacity-90 transition-opacity"
+                      >
+                        <PlusCircle className="w-4 h-4" />
+                        <span>Add New Host</span>
                       </button>
                     </div>
                   </div>
-                ))}
-              </div>
+                  <div className="max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 p-1">
+                    <div className="space-y-2 p-3">
+                      {hosts.length === 0 ? (
+                        <div className="text-center py-8 text-gray-400">
+                          No event creators found. Add one to get started.
+                        </div>
+                      ) : (
+                        hosts.map(({address, name}, index) => (
+                          <div 
+                            key={index}
+                            className="bg-gray-800 rounded-lg p-4 hover:bg-gray-700 transition-all duration-300 border border-gray-700 hover:border-gray-600"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-4">
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-400 to-green-600 flex items-center justify-center text-white font-bold">
+                                  {index + 1}
+                                </div>
+                                <div>
+                                  <div className="text-white font-medium mb-1">{name}</div>
+                                  <div className="text-gray-400 font-mono text-xs truncate max-w-xs">
+                                    {address}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <button 
+                                className="h-8 w-8 rounded-full bg-red-500 flex items-center justify-center hover:bg-red-600 transition-colors"
+                                onClick={() => deleteHost(address)}
+                                title="Delete host"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                  <div className="bg-gray-900 px-6 py-3 border-t border-gray-700 text-xs text-gray-400">
+                    Total: {hosts.length} event creators
+                  </div>
+                </div>
+              )}
+              
+              {/* Rewards Tab */}
+              {activeTab === 'rewards' && (
+                <div className="bg-gray-900 rounded-xl border border-gray-800 shadow-lg overflow-hidden">
+                  <div className="bg-gray-900 px-6 py-4 border-b border-gray-700">
+                  <div className="flex items-center justify-between">
+                      <div>
+                        <h2 className="text-xl font-semibold text-white">Manage Rewards</h2>
+                        <div className="h-1 w-16 bg-gradient-to-r from-green-400 to-green-600 mt-2"></div>
+                      </div>
+                      <button 
+                        
+                        className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-400 to-green-600 rounded-lg text-white font-medium hover:opacity-90 transition-opacity"
+                        onClick={openReward}
+                        >
+                        
+                        <PlusCircle className="w-4 h-4" />
+                        <span>New Reward</span>
+                      </button>
+                    </div>
+                  </div>
+                  {/* Rewards List */}
+                  <div className="max-h-96 overflow-y-auto scrollbar-thin bg-black scrollbar-thumb-gray-700 scrollbar-track-gray-900 p-1">
+                    <div className="space-y-2 p-3">
+                      {rewards.length === 0 ? (
+                        <div className="text-center py-8 text-gray-400">
+                          No rewards available.
+                        </div>
+                      ) : (
+                        rewards.map(({ name, price }, index) => (
+                          <div 
+                            key={index}
+                            className="bg-gray-800 rounded-lg p-4 hover:bg-gray-700 transition-all duration-300 border border-gray-700 hover:border-gray-600"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-4">
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold">
+                                  {index + 1}
+                                </div>
+                                <div>
+                                  <div className="text-white font-medium mb-1">{name}</div>
+                                  <div className="text-gray-400 font-mono text-xs">
+                                    Price: {price} GC
+                                  </div>
+                                </div>
+                              </div>
+
+                              <button 
+                                className="h-8 w-8 rounded-full bg-red-500 flex items-center justify-center hover:bg-red-600 transition-colors"
+                                onClick={() => removeReward(name)}
+                                title="Remove reward"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-800 px-6 py-3 border-t border-gray-700 text-xs text-gray-400">
+                    Total: {rewards.length} rewards
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
+        
         {hostModal && (
           <AddHost 
-          isOpen={hostModal} onClose={closeAddHost}  onSubmit={handleSubmit}
+            isOpen={hostModal} 
+            onClose={closeAddHost} 
+            onSubmit={handleSubmit}
+          />
+        )}
+        {rewardModal && (
+          <AddReward 
+            isOpen={rewardModal} 
+            onClose={closeReward} 
+            onSubmit={handleSubmitReward}
           />
         )}
       </div>

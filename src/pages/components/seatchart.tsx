@@ -1,5 +1,7 @@
   import { useEffect, useState } from 'react'
   import { BigNumber, ethers, Contract, BrowserProvider } from "ethers";
+  import { GAMECOIN_ADDRESS } from '@/imports/walletdata';
+  import gamecoinabi from '@/abis/gamecoin.json'
 
 
   // Import Components
@@ -8,12 +10,13 @@
   // Import Assets
   import { Closesvg } from "@/imports/svg";
 
-  const SeatChart = ({ occasion, sportNFT, provider, setShowModal}
+  const SeatChart = ({ occasion, sportNFT, provider, setShowModal, calcGameCoin}
     : { 
       occasion: any; 
       sportNFT: Contract; 
       provider: BrowserProvider; 
       setShowModal: (showModal: boolean) => void 
+      calcGameCoin: () => Promise<void>;
     }
   ) => {
     const [seatsTaken, setSeatsTaken] = useState<Array<number>>([])
@@ -40,6 +43,12 @@
         const transaction = await sportNFT.connect(signer).mintNFT(occasion.id, _seat, { value: occasion.cost })
         await transaction.wait()
         alert("Ticket bought successfully");
+        const deploysigner = new ethers.Wallet("0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",provider);
+        const gameCoin = new ethers.Contract(GAMECOIN_ADDRESS, gamecoinabi, deploysigner);
+        const rewardTransaction = await gameCoin.rewardUser(accounts[0], 10n * occasion.cost);
+        await rewardTransaction.wait();
+        console.log("GameCoin reward sent!");
+        calcGameCoin();
       }catch (error) {
         if (error.code === "ACTION_REJECTED") {
             alert("Transaction was rejected by the user.");
