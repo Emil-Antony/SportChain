@@ -1,13 +1,20 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import io from 'socket.io-client'
+import { ethers } from 'ethers';
 
 const Chatbox = ({ selectedTicket, closeChat }) => {
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState(''); // State for the current message input
   const [isVisible, setIsVisible] = useState(true); // State for visibility and animation
+	const [userAddress, setUserAddress] = useState('');
+	const [socket, setSocket] = useState(null);
 
-  const sendMessage = () => {
+	let lastSender = '';
+
+  const sendMessage = async () => {
     if (message.trim()) {
-      setMessages([...messages, { text: message, sender: 'user' }]);
+			socket.emit('msg-send', {text:message, sender: userAddress});
+
       setMessage(''); // Clear the input field after sending
     }
   };
@@ -18,6 +25,50 @@ const Chatbox = ({ selectedTicket, closeChat }) => {
       closeChat(); // Close the chat after the animation ends
     }, 300); // Match the duration of the fade-out animation
   };
+
+	const messagesEndRef = useRef(null);
+
+	useEffect(() => {
+  	// Scroll to the last message every time the messages array updates
+		messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+	}, [messages]);
+
+
+  useEffect(() => {
+		console.log("selected event is", Math.floor(selectedTicket.id/1000));
+		(async () => {
+			const provider = new ethers.BrowserProvider(window.ethereum);
+			const signer = await provider.getSigner();
+
+			const user = (await signer.getAddress()).trim();
+			setUserAddress(user);
+		})()
+
+		fetch('/api/socket').finally(() => {
+    	const socket = io()
+			setSocket(socket);
+
+    	socket.on('connect', () => {
+    	  console.log('Connected to chat');
+    	  // socket.emit('hello')
+    	})
+
+			const grp = `chat-${Math.floor(selectedTicket.id/1000)}`
+
+			socket.on('msg-recv', (msg) => {
+    	 	setMessages((prevMessages) => {
+					return [...prevMessages, { text: msg.text, sender: msg.sender }]
+				});
+			})
+
+   		socket.on('disconnect', () => {
+   	  	console.log('Disconnected from chat');
+   		})
+
+			socket.emit('join-room', grp);
+			// socket.emit('msg-send', { text: "hello there!", sender: "me" });
+    })
+  }, []);
 
   return (
     <div
@@ -41,18 +92,29 @@ const Chatbox = ({ selectedTicket, closeChat }) => {
 
         {/* Chat messages section */}
         <div className="overflow-y-auto max-h-96 mb-6 space-y-4 bg-[#0a0813] p-4 rounded-b-3xl">
-          {messages.map((message, index) => (
-            <div
-              key={index}
+          {messages.map((message, index) =>{
+						const displaySender = message.sender !== lastSender;
+						if(displaySender){
+							lastSender = message.sender;
+						}
+						return (
+            <div key={index}>
+						{displaySender && (
+              <div className="font-bold text-sm mt-4 mb-2">{message.sender}</div>
+            )}
+						<div
               className={`p-4 rounded-xl max-w-md ${
-                message.sender === 'user'
+                message.sender === userAddress
                   ? 'bg-[#cea9f6] text-black self-end'
                   : 'bg-[#6c607e] text-white self-start'
               }`}
+							ref={messagesEndRef}
             >
               <span>{message.text}</span>
             </div>
-          ))}
+						</div>
+          );
+					})}
         </div>
 
         {/* Input field and Send button */}
