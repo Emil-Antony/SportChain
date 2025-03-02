@@ -23,7 +23,8 @@ export default async function getNFTs(
 			
 			for (let i = 0; i < Number(bal); i++) {
 				const tokenId = await sportnft.tokenOfOwnerByIndex(address, i);
-				nftids.push(`${address}:${tokenId}`);
+				let nft = { tokenId : `${tokenId}`, owner : address, nfcstr : `${address}:${tokenId}` }
+				nftids.push(nft);
 			}
 		} catch (err) {
 			console.log("Error occured during operation: ", err);
