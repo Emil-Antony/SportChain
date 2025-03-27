@@ -169,15 +169,6 @@ export default function TicketList({account}){
 
             {/* Buttons Section */}
             <div className="flex justify-between mt-8 items-center">
-              <button className="relative inline-block text-lg ms-12 group"
-              onClick={writeNFC}>
-                <span className="relative z-10 block px-5 py-3 overflow-hidden font-medium leading-tight text-black transition-colors duration-300 ease-out border-2 border-[#fd3980] rounded-lg group-hover:text-white">
-                  <span className="absolute inset-0 w-full h-full px-5 py-3 rounded-lg bg-[#fd3980]"></span>
-                  <span className="absolute left-0 w-48 h-48 -ml-2 transition-all duration-300 origin-top-right -rotate-90 -translate-x-full translate-y-12 bg-[#0f1a58] group-hover:-rotate-180 ease"></span>
-                  <span className="relative">NFC</span>
-                </span>
-                <span className="absolute bottom-0 right-0 w-full h-12 -mb-1 -mr-1 transition-all duration-200 ease-linear bg-[#0f1a58] rounded-lg group-hover:mb-0 group-hover:mr-0" data-rounded="rounded-lg"></span>
-              </button>
 
               <button
                 className="relative inline-block text-lg me-12 group"

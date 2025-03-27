@@ -16,6 +16,7 @@ import sportnftabi from '@/abis/sportnft.json';
 import gamecoinabi from '@/abis/gamecoin.json'
 import SeatChart from "./components/seatchart"; 
 import TicketList from "./components/ticketlist";
+import Redeem from "./components/Redeem";
 import { ADMIN_WALLET, GAMECOIN_ADDRESS, CONTRACT_ADDRESS } from "@/imports/walletdata";
 
 const amoyTestnetParams = {
@@ -45,6 +46,10 @@ export default function Dash() {
   const [gameCoins, setGameCoins] = useState<Number>(0)
 
   const router = useRouter();
+
+  async function refreshBalance() {
+    calcGameCoin();
+  }
 
   async function setContracts(){
     const provider = new ethers.BrowserProvider(window.ethereum);
@@ -96,7 +101,7 @@ export default function Dash() {
           router.push("/admin");
         }
         const hosts = await fetchEventCreators();
-        if(hosts.some(host => host.address === connectedAcc)){
+        if(hosts.some(host => host.address.toLowerCase() === connectedAcc.toLowerCase())){
           console.log("gohost");
           router.push("/host");
         }
@@ -216,6 +221,12 @@ export default function Dash() {
           >
             Tickets
           </button>
+          <button
+            onClick={() => setSelectedTab("Redeem")}
+            className="relative text-white font-medium transition-transform duration-300 hover:-translate-y-1 after:content-[''] after:absolute after:left-0 after:bottom-0 after:h-[2px] after:bg-white after:w-full after:scale-x-0 after:origin-center after:transition-transform after:duration-300 hover:after:scale-x-100"
+          >
+            Redeem
+          </button>
         </div>
 
         {/* Spacer for the gap between buttons and account */}
@@ -247,93 +258,96 @@ export default function Dash() {
         <h1 className="font-extrabold text-transparent text-xl sm:text-4xl bg-clip-text bg-white">
           {selectedTab}
         </h1>
-        {selectedTab==="Events"?
-        <div className="relative w-64">
-          <input
-            type="text"
-            placeholder="Search Events..."
-            className="w-full py-2 px-4 bg-gray-800 text-white rounded-full border border-gray-600 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
-          />
-          <svg
-            className="absolute right-4 top-2.5 h-5 w-5 text-gray-400"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-4.35-4.35M17 10a7 7 0 10-14 0 7 7 0 0014 0z"
+        {/* {selectedTab === "Events" ? (
+          <div className="relative w-64">
+            <input
+              type="text"
+              placeholder="Search Events..."
+              className="w-full py-2 px-4 bg-gray-800 text-white rounded-full border border-gray-600 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
             />
-          </svg>
-        </div>:
-        <div className="relative w-64">
-          <input
-            type="text"
-            placeholder="Search NFTs..."
-            className="w-full py-2 px-4 bg-gray-800 text-white rounded-full border border-gray-600 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
-          />
-          <svg
-            className="absolute right-4 top-2.5 h-5 w-5 text-gray-400"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-4.35-4.35M17 10a7 7 0 10-14 0 7 7 0 0014 0z"
+            <svg
+              className="absolute right-4 top-2.5 h-5 w-5 text-gray-400"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-4.35-4.35M17 10a7 7 0 10-14 0 7 7 0 0014 0z"
+              />
+            </svg>
+          </div>
+        ) : selectedTab === "Tickets" ? (
+          <div className="relative w-64">
+            <input
+              type="text"
+              placeholder="Search NFTs..."
+              className="w-full py-2 px-4 bg-gray-800 text-white rounded-full border border-gray-600 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
             />
-          </svg>
-        </div>
-      }
+            <svg
+              className="absolute right-4 top-2.5 h-5 w-5 text-gray-400"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-4.35-4.35M17 10a7 7 0 10-14 0 7 7 0 0014 0z"
+              />
+            </svg>
+          </div>
+        ) : null} */}
       </div>
 
 
       {/* Conditional Content Rendering */}
       <div style={{height: '1px'}} className="bg-gradient-to-r from-transparent via-gray-800 to-transparent" />
       <div className="text-white p-10">
-        {selectedTab === "Events" ? (
-          occasions.map((occasion, i) => (
-            <div key={i} className="p-6 mb-4 mx-20 bg-gray-900 rounded-lg shadow-lg hover:bg-gray-800">
-              <div className="flex justify-between items-center">
-                <div className="flex flex-col justify-center">
-                  <p className="text-lg font-semibold">{occasion.date}</p>
-                  <p className="text-sm text-gray-400">{occasion.time}</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-lg font-semibold">{occasion.name}</p>
-                  <p className="text-sm text-gray-400">{occasion.location}</p>
-                </div>
-                <div className="text-right">
-                  {Number(occasion.tickets) > 0 ? (
-                    <button
-                      className="text-m border border-lg border-transparent rounded p-1 w-20 font-mono bg-green-500 transition duration-200 text-white hover:scale-110 hover:bg-emerald-500"
-                      onClick={() => togglePop(occasion)}
-                    >
-                      {ethers.formatEther(occasion.cost)} ETH
-                    </button>
-                  ) : (
-                    <button className="text-m border border-lg border-transparent rounded p-1 w-20 font-mono bg-red-600 transition duration-200 text-white hover:scale-90 hover:bg-slate-500">
-                      Sold Out
-                    </button>
-                  )}
-                </div>
+      {selectedTab === "Events" ? (
+        occasions.map((occasion, i) => (
+          <div key={i} className="p-6 mb-4 mx-20 bg-gray-900 rounded-lg shadow-lg hover:bg-gray-800">
+            <div className="flex justify-between items-center">
+              <div className="flex flex-col justify-center">
+                <p className="text-lg font-semibold">{occasion.date}</p>
+                <p className="text-sm text-gray-400">{occasion.time}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-lg font-semibold">{occasion.name}</p>
+                <p className="text-sm text-gray-400">{occasion.location}</p>
+              </div>
+              <div className="text-right">
+                {Number(occasion.tickets) > 0 ? (
+                  <button
+                    className="text-m border border-lg border-transparent rounded p-1 w-20 font-mono bg-green-500 transition duration-200 text-white hover:scale-110 hover:bg-emerald-500"
+                    onClick={() => togglePop(occasion)}
+                  >
+                    {ethers.formatEther(occasion.cost)} ETH
+                  </button>
+                ) : (
+                  <button className="text-m border border-lg border-transparent rounded p-1 w-20 font-mono bg-red-600 transition duration-200 text-white hover:scale-90 hover:bg-slate-500">
+                    Sold Out
+                  </button>
+                )}
               </div>
             </div>
-          ))
-        ) : (
-          // You can display the ticket-related content here
-          <div className="px-20">
-            <TicketList
-              account={account}
-              />
           </div>
-        )}
+        ))
+      ) : selectedTab === "Tickets" ? (
+        <div className="px-20">
+          <TicketList account={account} />
+        </div>
+      ) : (
+        // New "Redeem" tab content
+        <div className="px-20">
+          <Redeem account={account} gamecoins={gameCoins} refreshBalance={refreshBalance} />
+        </div>
+      )}
       </div>
       <div>
         {showModal && (

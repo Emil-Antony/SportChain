@@ -120,9 +120,6 @@ const Chatbox = ({ selectedTicket, closeChat }) => {
         {/* Input field and Send button */}
         <div className="flex flex-col space-y-2 mx-4 mt-4">
           {/* Warning Sign above input */}
-          <div className="text-center text-red-500 text-sm mb-4 font-medium">
-            !!! Messages cannot be sent until the event has started. !!!
-          </div>
           <div className="flex items-center space-x-4">
             <input
               type="text"

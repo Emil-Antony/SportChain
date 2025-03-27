@@ -13,7 +13,7 @@ import {
 import { Tooltip } from 'react-tooltip';
 import sportnftabi from '@/abis/sportnft.json';
 import { createevent } from "@/imports/apitest";
-import { ADMIN_WALLET } from "@/imports/walletdata";
+import { ADMIN_WALLET, CONTRACT_ADDRESS } from "@/imports/walletdata";
 import { fetchEventCreators } from "@/imports/adminFns";
 
 const amoyTestnetParams = {
@@ -46,7 +46,7 @@ const Host: React.FC = () => {
     async function setContracts(){
         const provider = new ethers.BrowserProvider(window.ethereum);
         setProvider(provider);
-        const sportNFTs = new ethers.Contract("0x5fbdb2315678afecb367f032d93f642f64180aa3",sportnftabi,provider);
+        const sportNFTs = new ethers.Contract(CONTRACT_ADDRESS,sportnftabi,provider);
         setsportNFT(sportNFTs);
     }
     function goHome (){
@@ -74,7 +74,7 @@ const Host: React.FC = () => {
     
           if (typeof connectedAcc !== "undefined") {
             const hosts = await fetchEventCreators();
-            if(!hosts.some(host => host.address === connectedAcc)){
+            if(!hosts.some(host => host.address.toLowerCase() === connectedAcc.toLowerCase())){
               router.push("/dash");
             }
             setAccount(connectedAcc);

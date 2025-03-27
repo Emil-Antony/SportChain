@@ -126,7 +126,7 @@ const Admin: React.FC = () => {
           if (typeof connectedAcc !== "undefined") {
             if(connectedAcc !== ADMIN_WALLET){
                 const fetchedhosts = await fetchEventCreators();
-                if(fetchedhosts.some(host => host.address === connectedAcc)){
+                if(fetchedhosts.some(host => host.address.toLowerCase() === connectedAcc.toLowerCase())){
                     router.push("/host");
                 }
                 else{

@@ -48,7 +48,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(200).json(giftCards);
   }
 
-  if (req.method === "POST" && req.body.purchase) {
+  if (req.method === "POST" && req.body.redeem) {
     // User purchases a gift card
     const { email, name } = req.body;
     let giftCards = readGiftCards();
@@ -61,7 +61,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Send email with the gift card code
     let transporter = nodemailer.createTransport({
       service: "Gmail",
-      auth: { user: "SportChainOfficial@gmail.com", pass: "emilachi_03" }
+      auth: { user: "SportChainOfficial@gmail.com", pass: "oquu ohic xkoz wopz" }
     });
 
     await transporter.sendMail({

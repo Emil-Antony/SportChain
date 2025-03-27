@@ -140,7 +140,7 @@ const Home: React.FC = () => {
       if(connectedAcc == ADMIN_WALLET){
         router.push("/admin");
       }
-      else if(hosts.some(host => host.address === connectedAcc)){
+      else if(hosts.some(host => host.address.toLowerCase() === connectedAcc.toLowerCase())){
         goHost();
       }
       else{
