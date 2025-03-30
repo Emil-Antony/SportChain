@@ -17,9 +17,9 @@ function writeGiftCards(data:any) {
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST" && req.body.admin) {
     // Admin adds a new gift card
-    const { name, price, code } = req.body;
+    const { name, price} = req.body;
     const giftCards = readGiftCards();
-    giftCards.push({ name, price, code});
+    giftCards.push({ name, price});
     writeGiftCards(giftCards);
     return res.status(200).json({ message: "Gift card added successfully" });
   }
@@ -55,8 +55,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let cardIndex = giftCards.findIndex(c => c.name === name);
 
     if (cardIndex === -1) return res.status(400).json({ error: "Gift card unavailable" });
+
+    function generateGiftCardCode() {
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      const segment = (length) => Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+      return `${segment(4)}-${segment(6)}-${segment(5)}`;
+    }
     
     let giftCard = giftCards[cardIndex];
+    let giftCardCode = generateGiftCardCode();
 
     // Send email with the gift card code
     let transporter = nodemailer.createTransport({
@@ -68,7 +75,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       from: "noreply@yourdomain.com",
       to: email,
       subject: "Your Gift Card",
-      text: `You've received a ${giftCard.name} gift card! Code: ${giftCard.code}`
+      text: `You've received a ${giftCard.name} gift card! Code: ${giftCardCode}`
     });
 
     return res.status(200).json({ message: "Gift card sent successfully" });

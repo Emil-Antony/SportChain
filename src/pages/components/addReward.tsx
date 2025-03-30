@@ -4,18 +4,16 @@ import { X } from "lucide-react";
 const AddReward = ({ isOpen, onClose, onSubmit }) => {
   const [name, setName] = useState("");
   const [cost, setCost] = useState("");
-  const [code, setCode] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!name || !cost || !code) {
+    if (!name || !cost) {
       alert("All fields are required");
       return;
     }
-    onSubmit({ name, cost, code });
+    onSubmit({ name, cost});
     setName("");
     setCost("");
-    setCode("");
     onClose();
   };
 
@@ -49,16 +47,6 @@ const AddReward = ({ isOpen, onClose, onSubmit }) => {
               className="w-full p-2 rounded bg-gray-800 text-white border border-gray-700"
               value={cost}
               onChange={(e) => setCost(e.target.value)}
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label className="text-white block mb-1">Gift Card Code</label>
-            <input
-              type="text"
-              className="w-full p-2 rounded bg-gray-800 text-white border border-gray-700"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
               required
             />
           </div>

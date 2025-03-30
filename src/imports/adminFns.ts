@@ -21,7 +21,7 @@ export const addEventCreator = async (newCreator: { name: string; address: strin
         const errorData = await res.json();
         throw new Error(errorData.message || "Failed to add event creator");
     }else{
-        const provider = new BrowserProvider(window.ethereum)
+        const provider = new BrowserProvider(window.ethereum as any)
         const signer : JsonRpcSigner = await provider.getSigner();
         const nftcontract = new ethers.Contract(CONTRACT_ADDRESS,sportnftabi,signer)
         nftcontract.setHost(newCreator.address,true);
