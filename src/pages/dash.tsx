@@ -16,6 +16,7 @@ import sportnftabi from '@/abis/sportnft.json';
 import gamecoinabi from '@/abis/gamecoin.json'
 import SeatChart from "./components/seatchart"; 
 import TicketList from "./components/ticketlist";
+import MobileConnect from "./components/mobileconnect"
 import Redeem from "./components/Redeem";
 import { ADMIN_WALLET, GAMECOIN_ADDRESS, CONTRACT_ADDRESS } from "@/imports/walletdata";
 
@@ -44,9 +45,17 @@ export default function Dash() {
   const [selectedTab, setSelectedTab] = useState<string>("Events")
   const [GCNcontract, setGCNcontract] = useState<ethers.Contract | null>(null)
   const [gameCoins, setGameCoins] = useState<Number>(0)
+  const [connectingMobile, setConnectingMobile] = useState<boolean>(false);
 
   const router = useRouter();
 
+  function connectToMobile(){
+    setConnectingMobile(true);
+  }
+
+  function closeConnecting(){
+    setConnectingMobile(false);
+  }
   async function refreshBalance() {
     calcGameCoin();
   }
@@ -258,9 +267,9 @@ export default function Dash() {
         <h1 className="font-extrabold text-transparent text-xl sm:text-4xl bg-clip-text bg-white">
           {selectedTab}
         </h1>
-        {/* {selectedTab === "Events" ? (
+        {selectedTab === "Events" ? (
           <div className="relative w-64">
-            <input
+            {/* <input
               type="text"
               placeholder="Search Events..."
               className="w-full py-2 px-4 bg-gray-800 text-white rounded-full border border-gray-600 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
@@ -278,11 +287,19 @@ export default function Dash() {
                 strokeWidth={2}
                 d="M21 21l-4.35-4.35M17 10a7 7 0 10-14 0 7 7 0 0014 0z"
               />
-            </svg>
+            </svg> */}
           </div>
         ) : selectedTab === "Tickets" ? (
           <div className="relative w-64">
-            <input
+            <button className="flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-full transition-all duration-300 shadow-lg hover:shadow-purple-500/40 border border-purple-500"
+            onClick={connectToMobile}>
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15 3H9C7.89543 3 7 3.89543 7 5V19C7 20.1046 7.89543 21 9 21H15C16.1046 21 17 20.1046 17 19V5C17 3.89543 16.1046 3 15 3Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M12 18H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              Connect to Mobile
+            </button>
+            {/* <input
               type="text"
               placeholder="Search NFTs..."
               className="w-full py-2 px-4 bg-gray-800 text-white rounded-full border border-gray-600 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
@@ -300,9 +317,9 @@ export default function Dash() {
                 strokeWidth={2}
                 d="M21 21l-4.35-4.35M17 10a7 7 0 10-14 0 7 7 0 0014 0z"
               />
-            </svg>
+            </svg> */}
           </div>
-        ) : null} */}
+        ) : null}
       </div>
 
 
@@ -341,6 +358,9 @@ export default function Dash() {
       ) : selectedTab === "Tickets" ? (
         <div className="px-20">
           <TicketList account={account} />
+          {connectingMobile && (
+            <MobileConnect onClose = {closeConnecting}/>
+          )}
         </div>
       ) : (
         // New "Redeem" tab content
