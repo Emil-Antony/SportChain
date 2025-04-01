@@ -1,26 +1,29 @@
-import React,{ useEffect, useState } from 'react';
+import React,{ useEffect, useState, useRef } from 'react';
+import { ethers } from 'ethers';
+import io from 'socket.io-client'
 
-const MobileConnect = ({ onClose }) => {
+const MobileConnect = ({ onClose, account }) => {
     const [requestReceived, setRequestReceived] = useState<boolean>(false);
     const [deviceInfo, setDeviceInfo] = useState<any>(null);
     const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+		const [userAddress, setUserAddress] = useState('');
+		const socketRef = useRef(null);
 
-    function recievedConnection(){
-        if (timeoutId) {
-            clearTimeout(timeoutId); 
-        }
-        setRequestReceived(true);
-        setDeviceInfo({
-            name: "Realme GT Neo 2",
-            os: "Android 14",
-            browser: "Chrome",
-        });
-    }
+		function rejectRequest(){
+			onClose();
+			setTimeout(()=>{alert("Connection was accepted")},10);
+
+			if(socketRef.current) {
+				socketRef.current.emit('request-failed', userAddress);
+				socketRef.current.disconnect()
+				socketRef.current = null
+			}
+		}
 
     function acceptRequest(){
         onClose();
         setTimeout(()=>{alert("Connection was accepted")},10);
-        //Mr Gayed Ferosh please fill out the rest of the function as per what you think is good⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+        // ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
         // ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣿⠟⠻⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
         // ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⣿⠀⠀⠈⠻⣦⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣴⣶⣦⡀⠀⠀⠀
         // ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡿⡇⠀⠀⠀⠀⠈⠙⢷⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⠾⠋⠁⢸⣿⡇⠀⠀⠀
@@ -50,14 +53,73 @@ const MobileConnect = ({ onClose }) => {
         // ⠀⣰⡟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣶⣿⠀⠀⠀⠀⠀⠀⠀⠀
         // ⣾⢿⣾⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠛⠀⠀⠀⠀⠀⠀⠀⠀
         // ⢀⣾⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢿⠀⠀⠀⠀⠀⠀⠀⠀⠀
+				
+				if(socketRef.current) {
+					socketRef.current.emit('request-success', userAddress);
+					socketRef.current.disconnect()
+					socketRef.current = null
+				}
     }
 
     useEffect(() => {
+				const onTimeout = () => {
+					alert("Connection timeout. Please try again.")
+					if(socketRef.current) {
+						socketRef.current.emit('request-failed', userAddress);
+						socketRef.current.disconnect()
+						socketRef.current = null
+					}
+				}
         const timeout = setTimeout(() => {
           onClose();
-          setTimeout(() => alert("Connection timeout. Please try again."), 10);
+          setTimeout(onTimeout, 10);
         }, 20000); 
         setTimeoutId(timeout);
+
+				const getUserAddress = async () => {
+					const accounts = await window.ethereum.request({
+						method: "eth_accounts",
+					});
+					setUserAddress(accounts[0]);
+					return accounts[0];
+				};
+
+
+				if(!socketRef.current) {
+					fetch('/api/socket').finally(() => {
+						const socket = io();
+						socketRef.current = socket
+
+						socket.on('connect', () => {
+							console.log('Socket connected');
+						});
+
+						(async () => {
+							const account = (await getUserAddress()).toLowerCase();
+							console.log("User address:", account);
+
+							socket.emit('join-room', `${account}-user`);
+
+							socket.on('app-request', (address) => {
+								console.log("app-request received at user");
+								if (timeoutId) {
+									clearTimeout(timeoutId); 
+								}
+								setRequestReceived(true);
+								setDeviceInfo({
+									name: "Realme GT Neo 2",
+									os: "Android 14",
+									browser: "Chrome",
+								});
+							});
+						})()
+						
+
+						socket.on('disconnect', () => {
+							console.log('Socket disconnected');
+						});
+					});
+				}
     
         return () => clearTimeout(timeout); // Cleanup timeout on unmount
       }, [onClose]);
@@ -92,12 +154,6 @@ const MobileConnect = ({ onClose }) => {
                                 <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce delay-100"></div>
                                 <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce delay-200"></div>
                             </div>
-                            <button 
-                                onClick={recievedConnection}
-                                className="mt-6 text-sm text-gray-400 hover:text-white underline transition-colors duration-200"
-                            >
-                            phone reqeust
-                            </button>
                         </>
                     ) : (
                         <>
@@ -116,10 +172,7 @@ const MobileConnect = ({ onClose }) => {
                                     Accept
                                 </button>
                                 <button
-                                    onClick={() => {
-                                        onClose();
-                                        setTimeout(() => {alert("Connection rejected")},10);
-                                    }}
+                                    onClick={rejectRequest}
                                     className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition duration-200"
                                 >
                                     Reject

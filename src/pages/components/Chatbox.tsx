@@ -91,10 +91,6 @@ const Chatbox = ({ selectedTicket, closeChat }) => {
   
             setMessages((prevMessages) => {
               const newMessages = [...prevMessages, { text: msg.text, sender: msg.sender }];
-              
-              // Save new messages to sessionStorage
-              sessionStorage.setItem('msgs', JSON.stringify({ messages: newMessages }));
-  
               return newMessages;
             });
           }
@@ -108,7 +104,18 @@ const Chatbox = ({ selectedTicket, closeChat }) => {
       }
     });
   
-    // No more disconnecting socket on unmount
+		return () => {
+			// Disconnects socket on unmount
+			if (socketRef.current) {
+				socketRef.current.disconnect()
+				socketRef.current = null
+			}
+
+			// Save messages to sessionStorage on unmount
+			if(typeof messages !== 'undefined' && messages.length > 0) {
+				sessionStorage.setItem('msgs', JSON.stringify({ messages: messages }));
+			}
+		}
   }, [selectedTicket.id]);
   
   return (
